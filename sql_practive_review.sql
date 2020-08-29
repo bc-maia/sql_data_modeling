@@ -1,3 +1,5 @@
+-- tested using https://sqliteonline.com/
+
 -- creating tables
 
 create table drivers (
@@ -79,3 +81,88 @@ JOIN drivers d ON d.id = v.driver_id
 WHERE d.last_name = 'sparrow';
 
 -- SUM, COUNT https://www.postgresql.org/docs/8.2/functions-aggregate.html
+SELECT * FROM drivers d
+JOIN vehicle v ON v.
+
+SELECT COUNT(drivers.id) AS Owners FROM vehicles
+JOIN drivers ON vehicles.driver_id = drivers.id
+WHERE vehicles.make = 'East Indiaman Galleon';
+
+SELECT d.last_name as Owner,  COUNT(v.model) AS Vehicles FROM vehicles v
+JOIN drivers d ON d.id = v.driver_id
+GROUP BY d.last_name;
+
+
+-- https://www.postgresqltutorial.com/postgresql-alter-table/
+ALTER TABLE vehicles 
+ADD COLUMN color varchar;
+
+-- https://www.postgresqltutorial.com/postgresql-update-join/
+UPDATE 
+    vehicles V
+SET 
+    color = 'stripped white'
+FROM 
+    drivers D
+WHERE 
+    V.driver_id = D.id AND
+    D.last_name = 'burton';
+
+
+-- 
+ALTER TABLE drivers
+ADD COLUMN alias_name VARCHAR;
+
+ALTER TABLE drivers
+ADD COLUMN address VARCHAR;
+
+
+-- 
+update drivers d
+set alias_name = 'Captain',
+        address = 'All Seas'
+WHERE last_name = 'sparrow';
+
+update drivers d
+set alias_name = 'Pumpkin King',
+	address = 'Halloween Town'
+WHERE last_name = 'skellington';
+
+update drivers d
+set alias_name = 'JB',
+	address = 'Hollywood'
+WHERE last_name = 'black';
+
+update drivers d
+set alias_name = 'Trucker',
+	address = 'Merica'
+WHERE last_name = 'burton';
+
+update drivers d
+set alias_name = 'Old Zero',
+	address = 'Arctic Regions'
+WHERE last_name = 'frost';
+
+SELECT * from drivers;
+
+
+-- https://www.postgresqltutorial.com/postgresql-timestamp/
+SET timezone = 'america/sao_paulo';
+
+SHOW timezone;
+
+ALTER TABLE vehicles
+ADD COLUMN registered timestamptz;
+
+SELECT * FROM vehicles;
+
+UPDATE vehicles
+SET registered = NOW();
+
+SELECT * FROM vehicles;
+
+UPDATE vehicle
+SET registered = '2020-06-22 12:10:25-07';
+
+
+-- https://www.postgresqltutorial.com/postgresql-interval/
