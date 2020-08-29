@@ -1,3 +1,12 @@
+-- Running PGSQL using Docker (https://hub.docker.com/_/postgres?tab=description)
+
+-- docker run -d \
+--     --name pgsql-udacity \
+--     -p 5432:5432 \
+--     -e POSTGRES_PASSWORD=SuperSafePass123 \
+--     -v /mnt/c/app_database/pgsql:/var/lib/postgresql/udacity \
+--     postgres
+
 -- tested using https://sqliteonline.com/
 
 -- creating tables
