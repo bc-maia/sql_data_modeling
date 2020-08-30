@@ -3,9 +3,9 @@
 -- docker run -d \
 --     --name pgsql-udacity \
 --     -p 5432:5432 \
---     -e POSTGRES_PASSWORD=SuperSafePass123 \
---     -v /mnt/c/app_database/pgsql:/var/lib/postgresql/udacity \
+--     -e POSTGRES_PASSWORD=passwd123 \
 --     postgres
+--     -v /mnt/c/apps_database/pgsql:/var/lib/postgresql/data \
 
 -- tested using https://sqliteonline.com/
 
