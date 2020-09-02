@@ -16,7 +16,7 @@ class Person(db.Model):
     name = db.Column(db.String(80), nullable=False)
 
     def __repr__(self):
-        return "<User %r>" % self.name
+        return f"<Person {self.id}: {self.name}>"
 
 
 db.create_all()
