@@ -11,6 +11,7 @@ db = SQLAlchemy(app)
 
 
 class Person(db.Model):
+    __tablename__ = "persons"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
 
@@ -20,16 +21,31 @@ class Person(db.Model):
 
 db.create_all()
 
-# TODO: creating first sample user
-# db.session.add(Person(name="Old Mr. PotatoHead"))
-# db.session.commit()
-
-person = Person.query.first()
-
 
 @app.route("/")
 def index():
-    return f"Hello, {person.name}!"
+    if person := Person.query.first():
+        return f"Hello, {person.name}!"
+    else:
+        return f"Empty database"
+
+
+@app.route("/add_person")
+def add_person():
+    # TODO: creating first sample user
+    db.session.add(Person(name="Old Mr. PotatoHead"))
+    db.session.commit()
+    return "person added"
+
+
+@app.route("/delete_person")
+def delete_person():
+    if person := Person.query.first():
+        db.session.delete(person)
+        db.session.commit()
+        return "person removed"
+    else:
+        return f"Empty database"
 
 
 if __name__ == "__main__":
