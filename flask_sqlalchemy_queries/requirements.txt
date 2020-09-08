@@ -1,0 +1,5 @@
+black
+flake8
+flask
+flask-sqlalchemy
+psycopg2-binary
