@@ -43,11 +43,11 @@ def test_connection_1():
 
     cursor.execute(
         """
-    CREATE TABLE table2 (
-        id INTEGER PRIMARY KEY,
-        completed BOOLEAN NOT NULL DEFAULT False
-    );
-    """
+        CREATE TABLE table2 (
+            id INTEGER PRIMARY KEY,
+            completed BOOLEAN NOT NULL DEFAULT False
+        );
+        """
     )
 
     cursor.execute("INSERT INTO table2 (id, completed) VALUES (%s, %s);", (1, True))
