@@ -7,10 +7,12 @@ def test_connection_0():
         "host='localhost' dbname='test' user='postgres' password='passwd123'"
     )
 
-    print("test conn 00: open")
+    print("test conn 01: open")
     cursor = conn.cursor()
 
-    # cursor.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
+    cursor.execute(
+        "CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);"
+    )
 
     cursor.execute("INSERT INTO test (num, data) VALUES (%s, %s)", (100, "abc'def"))
 
@@ -18,9 +20,11 @@ def test_connection_0():
 
     pp.pprint(cursor.fetchall())
 
+    cursor.execute("DROP TABLE test;")
+
     conn.commit()
 
-    print("test conn 00: close")
+    print("test conn 01: close")
 
     cursor.close()
 
@@ -32,7 +36,7 @@ def test_connection_1():
         "host='localhost' dbname='test' user='postgres' password='passwd123'"
     )
 
-    print("test conn 01: open")
+    print("test conn 02: open")
     cursor = conn.cursor()
 
     cursor.execute("DROP TABLE IF EXISTS table2;")
@@ -54,11 +58,14 @@ def test_connection_1():
 
     conn.commit()
 
-    print("test conn 01: close")
+    print("test conn 02: close")
     conn.close()
     cursor.close()
 
 
 if __name__ == "__main__":
+    print("Testing Connection 01:")
     test_connection_0()
+
+    print("\nTesting Connection 02:")
     test_connection_1()
