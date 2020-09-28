@@ -49,4 +49,5 @@ def delete_person():
 
 
 if __name__ == "__main__":
+    pp.pprint(Person.query.all())
     app.run()

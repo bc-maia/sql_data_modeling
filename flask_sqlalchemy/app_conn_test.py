@@ -6,7 +6,7 @@ import pprint as pp
 app = Flask(__name__)
 app.config[
     "SQLALCHEMY_DATABASE_URI"
-] = "postgresql://postgres:passwd123@192.168.0.11:5432/testingdatabase"
+] = "postgresql://postgres:passwd123@localhost:5432/testingdatabase"
 db = SQLAlchemy(app)
 
 
