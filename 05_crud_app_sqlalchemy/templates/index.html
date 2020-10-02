@@ -12,10 +12,26 @@
         <h1>To Do APP</h1>
     </div>
     <div>
+        <form action="/create-todo" method="POST">
+            <div>
+                <p>
+                    <label for="name">Create new To-Do Item</label>
+                </p>
+                <p>
+                    <input type="text" id="description" name="description">
+                    <input type="submit" id="submit" value="Create" />
+                </p>
+            </div>
+        </form>
+    </div>
+
+    <p>
+    <div>
         {% for d in context %}
         <li>{{ d.description }}</li>
         {% endfor %}
     </div>
+    </p>
 </body>
 
 </html>
