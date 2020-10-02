@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Another To Do APP</title>
+</head>
+
+<body>
+    <div>
+        <h1>To Do APP</h1>
+    </div>
+    <div>
+        {% for d in context %}
+        <li>{{ d.description }}</li>
+        {% endfor %}
+    </div>
+</body>
+
+</html>
