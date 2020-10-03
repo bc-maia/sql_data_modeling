@@ -1,8 +1,10 @@
 import json
-from flask import Flask, request, render_template, redirect, url_for, jsonify
+import sys
+from flask import Flask, request, render_template, jsonify, abort
+
+# from flask import redirect, url_for
 from flask.wrappers import Response
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.utils import redirect
 
 
 app = Flask(__name__)
@@ -42,23 +44,27 @@ def index():
 def api_todo():
     if request.method == "GET":
         todos = Todo.query.all()
-        response = {t.id: {"Description": t.description} for t in todos}
-        return response
+        response = {i: {"Description": t.description} for i, t in enumerate(todos)}
+        return jsonify(response)
 
     if request.method == "POST":
         if request.data:
             if description := request.get_json()["description"]:
-                todo = store_todo(description)
-                return jsonify({"description": todo.description})
+                response = {}
+                try:
+                    todo = Todo(description=description)
+                    db.session.add(todo)
+                    db.session.commit()
+                    response["description"] = description
+                except:
+                    db.session.rollback()
+                    print(sys.exc_info())
+                    response = None
+                finally:
+                    db.session.close()
 
-        return Response(status=400, response="Must send a payload")
-
-
-def store_todo(description: str) -> Todo:
-    todo = Todo(description=description)
-    db.session.add(todo)
-    db.session.commit()
-    return todo
+                return jsonify(response) if response else abort(500)
+        abort(400)
 
 
 if __name__ == "__main__":
