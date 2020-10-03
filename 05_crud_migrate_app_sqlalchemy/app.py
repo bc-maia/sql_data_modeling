@@ -1,9 +1,10 @@
 import json
 import sys
 from flask import Flask, request, render_template, jsonify, abort
-from flask.wrappers import Response
+from flask.helpers import url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from werkzeug.utils import redirect
 
 
 app = Flask(__name__)
@@ -26,7 +27,7 @@ class Todo(db.Model):
 
 @app.route("/")
 def index():
-    todos = Todo.query.all()
+    todos = Todo.query.order_by("id").all()
     return render_template("index.html", context=todos)
 
 
@@ -34,7 +35,7 @@ def index():
 def api_todo():
     if request.method == "GET":
         todos = Todo.query.all()
-        response = {i: {"Description": t.description} for i, t in enumerate(todos)}
+        response = {t.id: {"Description": t.description} for t in todos}
         return jsonify(response)
 
     if request.method == "POST":
@@ -46,6 +47,7 @@ def api_todo():
                     db.session.add(todo)
                     db.session.commit()
                     response["description"] = description
+                    response["id"] = todo.id
                 except:
                     db.session.rollback()
                     print(sys.exc_info())
@@ -55,6 +57,22 @@ def api_todo():
 
                 return jsonify(response) if response else abort(500)
         abort(400)
+
+
+@app.route("/api/todo/<todo_id>", methods=["POST"])
+def api_todo_update(todo_id):
+    try:
+        completed = request.get_json()["completed"]
+        todo = Todo.query.get(todo_id)
+        todo.completed = completed
+        db.session.commit()
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":

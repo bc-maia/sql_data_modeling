@@ -9,31 +9,70 @@
         .hidden {
             display: none;
         }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
     </style>
 </head>
 
 <body>
     <div>
         <h1>To Do App</h1>
+        <h3>Add new tasks</h1>
     </div>
     <div>
-        <!-- <form action="/todo/create" method="POST"> TODO: uncomment if used with form action -->
-        <p><label for="name">Create new To-Do Item</label></p>
         <form id="form">
-            <input type="text" id="description" name="description">
-            <input type="submit" id="submit" value="Create" />
+            <p>
+                <input type="text" id="description" name="description">
+                <input type="submit" id="submit" value="Create" />
+            </p>
         </form>
     </div>
-    <div id="error" class="hidden">Something went wrong!</div>
+    <div id="error" class="hidden">
+        <p>Something went wrong!</p>
+    </div>
     <div>
         <ul id="todos">
-            {% for d in context %}
-            <li>{{ d.description }}</li>
+            {% for todo in context %}
+            <li>
+                <input type="checkbox" data-id="{{ todo.id }}" class="check-completed"
+                    {% if todo.completed %}checked{% endif %} />
+                {{ todo.description }}
+            </li>
             {% endfor %}
         </ul>
     </div>
 
     <script>
+        const updateCompleteStatus = (event) => {
+            event.preventDefault();
+
+            const newCompleted = event.target.checked;
+            const id = event.target.dataset.id;
+
+            fetch(`api/todo/${id}`, {
+                method: "POST",
+                body: JSON.stringify({
+                    "completed": newCompleted
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(
+                () => { document.getElementById("error").className = "hidden"; }
+            ).catch(
+                () => { document.getElementById("error").className = ""; }
+            )
+        }
+
+        const checkboxes = document.querySelectorAll(".check-completed");
+        checkboxes.forEach(cbox => {
+            cbox.addEventListener("change", updateCompleteStatus);
+        });
+
         document.getElementById("form").onsubmit = (event) => {
             event.preventDefault();
 
@@ -49,12 +88,22 @@
                 (response) => { return response.json() }
             ).then(
                 (responseJson) => {
-                    const listItem = document.createElement("LI");
-                    if (responseJson["description"]) {
-                        listItem.innerHTML = responseJson["description"]
+                    if (responseJson.description) {
+                        const listItem = document.createElement("li");
+
+                        const checkbox = document.createElement('input');
+                        checkbox.className = 'check-completed';
+                        checkbox.type = 'checkbox';
+                        checkbox.setAttribute('data-id', responseJson.id);
+                        checkbox.addEventListener("change", updateCompleteStatus);
+                        listItem.appendChild(checkbox);
+
+                        const text = document.createTextNode(` ${responseJson.description}`)
+                        listItem.appendChild(text);
+
                         document.getElementById("todos").appendChild(listItem);
-                        document.getElementById("error").className = "hidden";
                         document.getElementById("description").value = ""
+                        document.getElementById("error").className = "hidden";
                     }
                 }
             ).catch(
