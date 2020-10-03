@@ -5,33 +5,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Another To Do APP</title>
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
     <div>
-        <h1>To Do APP</h1>
+        <h1>To Do App</h1>
     </div>
     <div>
-        <form action="/create-todo" method="POST">
-            <div>
-                <p>
-                    <label for="name">Create new To-Do Item</label>
-                </p>
-                <p>
-                    <input type="text" id="description" name="description">
-                    <input type="submit" id="submit" value="Create" />
-                </p>
-            </div>
+        <!-- <form action="/todo/create" method="POST"> TODO: uncomment if used with form action -->
+        <p><label for="name">Create new To-Do Item</label></p>
+        <form id="form">
+            <input type="text" id="description" name="description">
+            <input type="submit" id="submit" value="Create" />
         </form>
     </div>
-
-    <p>
+    <div id="error" class="hidden">Something went wrong!</div>
     <div>
-        {% for d in context %}
-        <li>{{ d.description }}</li>
-        {% endfor %}
+        <ul id="todos">
+            {% for d in context %}
+            <li>{{ d.description }}</li>
+            {% endfor %}
+        </ul>
     </div>
-    </p>
+
+    <script>
+        document.getElementById("form").onsubmit = (event) => {
+            event.preventDefault();
+
+            fetch("/api/todo", {
+                method: "POST",
+                body: JSON.stringify({
+                    "description": document.getElementById("description").value
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(
+                (response) => { return response.json() }
+            ).then(
+                (responseJson) => {
+                    const listItem = document.createElement("LI");
+                    if (responseJson["description"]) {
+                        listItem.innerHTML = responseJson["description"]
+                        document.getElementById("todos").appendChild(listItem);
+                        document.getElementById("error").className = "hidden";
+                        document.getElementById("description").value = ""
+                    }
+                }
+            ).catch(
+                () => { document.getElementById("error").className = ""; }
+            )
+        }
+    </script>
 </body>
 
 </html>

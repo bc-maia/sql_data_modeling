@@ -1,7 +1,8 @@
 import json
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for, jsonify
 from flask.wrappers import Response
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.utils import redirect
 
 
 app = Flask(__name__)
@@ -23,34 +24,34 @@ class Todo(db.Model):
 db.create_all()
 
 
+# TODO: only used via form post
+# @app.route("/todo/create", methods=["POST"])
+# def create():
+#     if request.method == "POST":
+#         if description := request.form.get("description"):
+#             store_todo(description)
+#     return redirect(url_for("index"))
+
+
 @app.route("/")
 def index():
     return render_template("index.html", context=Todo.query.all())
 
 
-@app.route("/todo/create", methods=["POST"])
-def create():
+@app.route("/api/todo", methods=["GET", "POST"])
+def api_todo():
+    if request.method == "GET":
+        todos = Todo.query.all()
+        response = {t.id: {"Description": t.description} for t in todos}
+        return response
+
     if request.method == "POST":
-        if description := request.form.get("description"):
-            store_todo(description)
+        if request.data:
+            if description := request.get_json()["description"]:
+                todo = store_todo(description)
+                return jsonify({"description": todo.description})
 
-        return render_template("index.html", context=Todo.query.all())
-
-
-@app.route("/api/todo", methods=["GET"])
-def api_list():
-    todos = Todo.query.all()
-    response = {t.id: {"Description": t.description} for t in todos}
-    return response
-
-
-@app.route("/api/todo", methods=["POST"])
-def api_create():
-    if request.method == "POST":
-        data = json.loads(request.data)
-        if description := data.get("description"):
-            todo = store_todo(description)
-            return f"Task {todo} created"
+        return Response(status=400, response="Must send a payload")
 
 
 def store_todo(description: str) -> Todo:
