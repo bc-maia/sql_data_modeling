@@ -14,6 +14,17 @@
             list-style-type: none;
             margin: 0;
             padding: 0;
+            width: 300px;
+        }
+
+        li button {
+            /* -webkit-appearance: none; */
+            background: none;
+            border: none;
+            outline: none;
+            color: darkred;
+            float: right;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -41,6 +52,7 @@
                 <input type="checkbox" data-id="{{ todo.id }}" class="check-completed"
                     {% if todo.completed %}checked{% endif %} />
                 {{ todo.description }}
+                <button data-id="{{ todo.id }}" class="delete-button">x</button>
             </li>
             {% endfor %}
         </ul>
@@ -68,48 +80,85 @@
             )
         }
 
-        const checkboxes = document.querySelectorAll(".check-completed");
-        checkboxes.forEach(cbox => {
-            cbox.addEventListener("change", updateCompleteStatus);
-        });
-
-        document.getElementById("form").onsubmit = (event) => {
+        const removeTodoItem = (event) => {
             event.preventDefault();
 
-            fetch("/api/todo", {
-                method: "POST",
-                body: JSON.stringify({
-                    "description": document.getElementById("description").value
-                }),
+            const id = event.target.dataset.id;
+
+            fetch(`api/todo/${id}`, {
+                method: "DELETE",
                 headers: {
                     "Content-Type": "application/json"
                 }
             }).then(
-                (response) => { return response.json() }
-            ).then(
-                (responseJson) => {
-                    if (responseJson.description) {
-                        const listItem = document.createElement("li");
-
-                        const checkbox = document.createElement('input');
-                        checkbox.className = 'check-completed';
-                        checkbox.type = 'checkbox';
-                        checkbox.setAttribute('data-id', responseJson.id);
-                        checkbox.addEventListener("change", updateCompleteStatus);
-                        listItem.appendChild(checkbox);
-
-                        const text = document.createTextNode(` ${responseJson.description}`)
-                        listItem.appendChild(text);
-
-                        document.getElementById("todos").appendChild(listItem);
-                        document.getElementById("description").value = ""
-                        document.getElementById("error").className = "hidden";
-                    }
+                () => {
+                    event.toElement.parentElement.remove()
+                    document.getElementById("error").className = "hidden";
                 }
             ).catch(
                 () => { document.getElementById("error").className = ""; }
             )
         }
+
+        const createListItem = (responseJson) => {
+            const listItem = document.createElement("li");
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'check-completed';
+            checkbox.setAttribute('data-id', responseJson.id);
+            checkbox.addEventListener("change", updateCompleteStatus);
+            listItem.appendChild(checkbox);
+
+            const text = document.createTextNode(` ${responseJson.description}`)
+            listItem.appendChild(text);
+
+            const delBtn = document.createElement("button");
+            delBtn.innerHTML = "x"
+            delBtn.className = "delete-button";
+            delBtn.setAttribute('data-id', responseJson.id);
+            delBtn.addEventListener("click", removeTodoItem);
+            listItem.appendChild(delBtn);
+
+            document.getElementById("todos").appendChild(listItem);
+            document.getElementById("description").value = ""
+            document.getElementById("error").className = "hidden";
+        }
+
+
+        document.querySelectorAll(".check-completed")
+            .forEach(checkbox => {
+                checkbox.addEventListener("change", updateCompleteStatus);
+            });
+
+        document.querySelectorAll(".delete-button")
+            .forEach(button => {
+                button.addEventListener("click", removeTodoItem);
+            });
+
+        document.getElementById("form")
+            .onsubmit = (event) => {
+                event.preventDefault();
+
+                fetch("/api/todo", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        "description": document.getElementById("description").value
+                    }),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }).then(
+                    (response) => { return response.json() }
+                ).then(
+                    (responseJson) => {
+                        if (responseJson.description)
+                            createListItem(responseJson);
+                    }
+                ).catch(
+                    () => { document.getElementById("error").className = ""; }
+                )
+            }
     </script>
 </body>
 

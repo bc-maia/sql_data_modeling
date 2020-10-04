@@ -31,13 +31,17 @@ def index():
     return render_template("index.html", context=todos)
 
 
-@app.route("/api/todo", methods=["GET", "POST"])
+@app.route("/api/todo", methods=["GET"])
 def api_todo():
-    if request.method == "GET":
-        todos = Todo.query.all()
-        response = {t.id: {"Description": t.description} for t in todos}
-        return jsonify(response)
+    todos = Todo.query.all()
+    response = {
+        t.id: {"Description": t.description, "Completed": t.completed} for t in todos
+    }
+    return jsonify(response)
 
+
+@app.route("/api/todo", methods=["POST"])
+def api_todo_new():
     if request.method == "POST":
         if request.data:
             if description := request.get_json()["description"]:
@@ -59,20 +63,36 @@ def api_todo():
         abort(400)
 
 
-@app.route("/api/todo/<todo_id>", methods=["POST"])
+@app.route("/api/todo/<todo_id>", methods=["POST", "DELETE"])
 def api_todo_update(todo_id):
-    try:
-        completed = request.get_json()["completed"]
-        todo = Todo.query.get(todo_id)
-        todo.completed = completed
-        db.session.commit()
-    except:
-        db.session.rollback()
-        print(sys.exc_info())
-    finally:
-        db.session.close()
+    if request.method == "POST":
+        try:
+            completed = request.get_json()["completed"]
+            todo = Todo.query.get(todo_id)
+            todo.completed = completed
+            db.session.commit()
+        except:
+            db.session.rollback()
+            print(sys.exc_info())
+        finally:
+            db.session.close()
 
-    return redirect(url_for("index"))
+        return redirect(url_for("index"))
+
+    if request.method == "DELETE":
+        success = False
+        try:
+            todo = Todo.query.get(todo_id)
+            db.session.delete(todo)
+            db.session.commit()
+            success = True
+        except:
+            db.session.rollback()
+            print(sys.exc_info())
+        finally:
+            db.session.close()
+
+        return jsonify({"success": success}) if success else abort(400)
 
 
 if __name__ == "__main__":
