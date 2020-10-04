@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Another To Do APP</title>
+    <style>
+        .hidden {
+            display: none;
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            width: 300px;
+        }
+
+        li button {
+            /* -webkit-appearance: none; */
+            background: none;
+            border: none;
+            outline: none;
+            color: darkred;
+            float: right;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h1>To Do App</h1>
+        <h3>Add new tasks</h1>
+    </div>
+    <div>
+        <form id="form">
+            <p>
+                <input type="text" id="description" name="description">
+                <input type="submit" id="submit" value="Create" />
+            </p>
+        </form>
+    </div>
+    <div id="error" class="hidden">
+        <p>Something went wrong!</p>
+    </div>
+    <div>
+        <ul id="todos">
+            {% for todo in context %}
+            <li>
+                <input type="checkbox" data-id="{{ todo.id }}" class="check-completed"
+                    {% if todo.completed %}checked{% endif %} />
+                {{ todo.description }}
+                <button data-id="{{ todo.id }}" class="delete-button">x</button>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        const updateCompleteStatus = (event) => {
+            event.preventDefault();
+
+            const newCompleted = event.target.checked;
+            const id = event.target.dataset.id;
+
+            fetch(`api/todo/${id}`, {
+                method: "POST",
+                body: JSON.stringify({
+                    "completed": newCompleted
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(
+                () => { document.getElementById("error").className = "hidden"; }
+            ).catch(
+                () => { document.getElementById("error").className = ""; }
+            )
+        }
+
+        const removeTodoItem = (event) => {
+            event.preventDefault();
+
+            const id = event.target.dataset.id;
+
+            fetch(`api/todo/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(
+                () => {
+                    event.toElement.parentElement.remove()
+                    document.getElementById("error").className = "hidden";
+                }
+            ).catch(
+                () => { document.getElementById("error").className = ""; }
+            )
+        }
+
+        const createListItem = (responseJson) => {
+            const listItem = document.createElement("li");
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'check-completed';
+            checkbox.setAttribute('data-id', responseJson.id);
+            checkbox.addEventListener("change", updateCompleteStatus);
+            listItem.appendChild(checkbox);
+
+            const text = document.createTextNode(` ${responseJson.description}`)
+            listItem.appendChild(text);
+
+            const delBtn = document.createElement("button");
+            delBtn.innerHTML = "x"
+            delBtn.className = "delete-button";
+            delBtn.setAttribute('data-id', responseJson.id);
+            delBtn.addEventListener("click", removeTodoItem);
+            listItem.appendChild(delBtn);
+
+            document.getElementById("todos").appendChild(listItem);
+            document.getElementById("description").value = ""
+            document.getElementById("error").className = "hidden";
+        }
+
+
+        document.querySelectorAll(".check-completed")
+            .forEach(checkbox => {
+                checkbox.addEventListener("change", updateCompleteStatus);
+            });
+
+        document.querySelectorAll(".delete-button")
+            .forEach(button => {
+                button.addEventListener("click", removeTodoItem);
+            });
+
+        document.getElementById("form")
+            .onsubmit = (event) => {
+                event.preventDefault();
+
+                fetch("/api/todo", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        "description": document.getElementById("description").value
+                    }),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }).then(
+                    (response) => { return response.json() }
+                ).then(
+                    (responseJson) => {
+                        if (responseJson.description)
+                            createListItem(responseJson);
+                    }
+                ).catch(
+                    () => { document.getElementById("error").className = ""; }
+                )
+            }
+    </script>
+</body>
+
+</html>
