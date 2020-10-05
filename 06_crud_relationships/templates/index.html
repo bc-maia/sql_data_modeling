@@ -17,6 +17,10 @@
             width: 300px;
         }
 
+        li {
+            clear: both;
+        }
+
         li button {
             /* -webkit-appearance: none; */
             background: none;
@@ -26,28 +30,39 @@
             float: right;
             cursor: pointer;
         }
+
+        .lists-wrapper,
+        .todos-wrapper {
+            display: inline-block;
+            vertical-align: top;
+        }
     </style>
+    <h2>TODO APP: A Web Version</h2>
 </head>
 
 <body>
-    <div>
-        <h1>To Do App</h1>
-        <h3>Add new tasks</h1>
+    <div class="lists-wrapper">
+        <h3>To Do Lists</h3>
+        <ul id="lists">
+            {% for list in lists %}
+            <li>
+                <a href="/api/lists/{{list.id}}">{{ list.name }}</a>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
-    <div>
+    <div class="todos-wrapper">
+        <h3>To Do's</h3>
+        <h4>{{ active_list }}</h4>
         <form id="form">
-            <p>
-                <input type="text" id="description" name="description">
-                <input type="submit" id="submit" value="Create" />
-            </p>
+            <input type="text" id="description" name="description">
+            <input type="submit" id="submit" value="Create" />
         </form>
-    </div>
-    <div id="error" class="hidden">
-        <p>Something went wrong!</p>
-    </div>
-    <div>
+        <div id="error" class="hidden">
+            <p>Something went wrong!</p>
+        </div>
         <ul id="todos">
-            {% for todo in context %}
+            {% for todo in todos %}
             <li>
                 <input type="checkbox" data-id="{{ todo.id }}" class="check-completed"
                     {% if todo.completed %}checked{% endif %} />
